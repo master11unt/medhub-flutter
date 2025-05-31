@@ -35,7 +35,7 @@ class DetailArtikelPage extends StatelessWidget {
         title: Text(
           'Edukasi Pengendara',
           style: GoogleFonts.poppins(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
             color: primaryColor,
           ),

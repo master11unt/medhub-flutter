@@ -24,7 +24,7 @@ class TermsConditionsPage extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
             color: primaryColor,
-            fontSize: 16,
+            fontSize: 20,
           ),
         ),
         centerTitle: false,

@@ -6,11 +6,6 @@ import 'package:medhub/data/datasource/auth_local_datasource.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/main_page.dart';
 import 'package:medhub/presentation/auth/pages/signup_page.dart';
 import 'package:medhub/presentation/auth/bloc/login/login_bloc.dart';
-import 'package:medhub/data/model/response/auth_response_model.dart';
-
-// debug
-// print(LoginState);
-// print(LoginState.initial);
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,10 +16,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   final Color primaryColor = const Color(0xFF00A89E);
 
   @override
@@ -36,29 +29,24 @@ class _LoginPageState extends State<LoginPage> {
           if (state is LoginStateLoading) {
             showLoadingDialog(context);
           } else if (state is LoginStateSuccess) {
-            
             // Simpan data ke lokal
             await AuthLocalDatasource().saveAuthData(state.authResponseModel);
             Navigator.of(context, rootNavigator: true).pop(); // tutup loading
             showLoginSuccessDialog(context);
           } else if (state is LoginStateError) {
-            Navigator.of(
-              context,
-              rootNavigator: true,
-            ).popUntil((route) => route.isFirst);
+            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
             showDialog(
               context: context,
-              builder:
-                  (_) => AlertDialog(
-                    title: const Text('Login Gagal'),
-                    content: Text(state.message),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('OK'),
-                      ),
-                    ],
+              builder: (_) => AlertDialog(
+                title: const Text('Login Gagal'),
+                content: Text(state.message),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
                   ),
+                ],
+              ),
             );
           }
         },
@@ -79,14 +67,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 40),
-
               buildLabeledTextField(
                 label: 'Email / No HP',
                 hint: 'Email / No HP',
                 controller: _emailController,
               ),
               const SizedBox(height: 16),
-
               buildLabeledTextField(
                 label: 'Kata Sandi',
                 hint: 'Kata Sandi',
@@ -106,7 +92,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -123,18 +108,14 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     // Validasi input
-                    if (_emailController.text.isEmpty ||
-                        _passwordController.text.isEmpty) {
+                    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email dan password wajib diisi!'),
-                        ),
+                        const SnackBar(content: Text('Email dan password wajib diisi!')),
                       );
                       return;
                     }
@@ -155,15 +136,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: Text(
                     'Masuk',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
+                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),
               const SizedBox(height: 14),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -265,35 +242,32 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            child: Center(
-              child: Container(
-                width: 300,
-                height: 210,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: const Center(
-                  child: SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 13,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Color(0xFF00C8AE),
-                      ),
-                      backgroundColor: Color(0xFFB2F1EC),
-                    ),
-                  ),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Center(
+          child: Container(
+            width: 300,
+            height: 210,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: const Center(
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: CircularProgressIndicator(
+                  strokeWidth: 13,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C8AE)),
+                  backgroundColor: Color(0xFFB2F1EC),
                 ),
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -301,42 +275,39 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Color(0xFF00C8AE),
-                    child: Icon(
-                      Icons.login_rounded,
-                      color: Colors.white,
-                      size: 36,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Login Berhasil!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Hapus tombol "Lanjut ke Beranda" jika tidak ingin user klik manual
-                  // atau bisa dibiarkan, tapi tidak perlu ditekan user
-                ],
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Color(0xFF00C8AE),
+                child: Icon(
+                  Icons.login_rounded,
+                  color: Colors.white,
+                  size: 36,
+                ),
               ),
-            ),
+              const SizedBox(height: 24),
+              Text(
+                'Login Berhasil!',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
+        ),
+      ),
     );
 
     // Tutup dialog dan langsung navigasi ke MainPage setelah 1 detik

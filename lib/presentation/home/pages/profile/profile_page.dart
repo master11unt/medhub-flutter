@@ -33,11 +33,17 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final authData = await AuthLocalDatasource().getAuthData();
       final token = await AuthLocalDatasource().getToken();
-      final healthRecordResponse = await HealthRecordRemoteDatasource()
-          .getMyHealthRecord(token);
+      Data? healthRecord;
+      try {
+        final healthRecordResponse = await HealthRecordRemoteDatasource()
+            .getMyHealthRecord(token);
+        healthRecord = healthRecordResponse.data;
+      } catch (e) {
+        healthRecord = null;
+      }
       setState(() {
         _user = authData.user;
-        _healthRecord = healthRecordResponse.data;
+        _healthRecord = healthRecord;
         _isLoading = false;
       });
     } catch (e) {
@@ -63,6 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: Text(
           "Profil",
           style: GoogleFonts.poppins(
@@ -348,42 +355,46 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
 
                     // Tombol logout
-                    Center(
-                      child: BlocListener<LogoutBloc, LogoutState>(
-                        listener: (context, state) {
-                          if (state is LogoutStateSuccess) {
-                            AuthLocalDatasource().removeAuthData();
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/login',
-                              (route) => false,
-                            );
-                          } else if (state is LogoutStateError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Logout gagal: ${state.message}'),
-                              ),
-                            );
-                          }
-                        },
-                        child: OutlinedButton(
-                          onPressed: () {
-                            context.read<LogoutBloc>().add(
-                              const LogoutEvent.logout(),
-                            );
+                    SafeArea(
+                      child: Center(
+                        child: BlocListener<LogoutBloc, LogoutState>(
+                          listener: (context, state) {
+                            if (state is LogoutStateSuccess) {
+                              AuthLocalDatasource().removeAuthData();
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/login',
+                                (route) => false,
+                              );
+                            } else if (state is LogoutStateError) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Logout gagal: ${state.message}',
+                                  ),
+                                ),
+                              );
+                            }
                           },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFF44336)),
-                            minimumSize: const Size.fromHeight(48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                          child: OutlinedButton(
+                            onPressed: () {
+                              context.read<LogoutBloc>().add(
+                                const LogoutEvent.logout(),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFF44336)),
+                              minimumSize: const Size.fromHeight(48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            "Keluar Akun",
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFFF44336),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                            child: Text(
+                              "Keluar Akun",
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFFF44336),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),

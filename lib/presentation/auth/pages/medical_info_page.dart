@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medhub/data/datasource/auth_local_datasource.dart';
-import 'package:medhub/presentation/home/pages/home_dan_konsultasi/main_page.dart';
 import 'package:medhub/presentation/auth/bloc/medical_info/medical_info_bloc.dart';
 
 class MedicalInfoPage extends StatefulWidget {

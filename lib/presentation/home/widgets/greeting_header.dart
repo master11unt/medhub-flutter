@@ -3,16 +3,18 @@ import 'package:medhub/presentation/home/pages/home_dan_konsultasi/cari_dokter_p
 
 class GreetingHeader extends StatelessWidget {
   final String userName;
-  final Widget? profileImageWidget;
+  // final Widget? profileImageWidget;
+  final String? userImageUrl;
   final VoidCallback? onNotificationPressed;
-  final VoidCallback? onSearchTap; // ✅ Tambahan
+  final VoidCallback? onSearchTap;
 
   const GreetingHeader({
     super.key,
     required this.userName,
-    this.profileImageWidget,
+    this.userImageUrl,
+    // this.profileImageWidget,
     this.onNotificationPressed,
-    this.onSearchTap, // ✅ Tambahan
+    this.onSearchTap,
   });
 
   String _getGreeting() {
@@ -26,43 +28,67 @@ class GreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final greeting = _getGreeting();
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF00A99D),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 32, 16, 20),
+      padding: EdgeInsets.fromLTRB(16, topPadding + 16, 16, 20),
       child: Column(
         children: [
           Row(
             children: [
-              profileImageWidget ??
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage(
-                      'assets/images/profile/profilegr.png',
-                    ),
-                  ),
+              InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child:
+                    userImageUrl != null && userImageUrl!.isNotEmpty
+                        ? CircleAvatar(
+                          radius: 30,
+                          backgroundImage: NetworkImage(userImageUrl!),
+                        )
+                        : const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.grey,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+              ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      greeting,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        greeting,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        userName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               IconButton(

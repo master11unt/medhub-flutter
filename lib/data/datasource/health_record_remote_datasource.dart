@@ -5,6 +5,7 @@ import 'package:medhub/data/model/request/health_record_request_model.dart';
 import 'package:medhub/data/model/response/health_record_response_model.dart';
 
 class HealthRecordRemoteDatasource {
+
   Future<HealthRecordResponseModel> submitHealthRecord(
     HealthRecordRequestModel data,
     String token,

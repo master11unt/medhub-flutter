@@ -31,7 +31,7 @@ class DataPendaftarPage extends StatelessWidget {
           'Data Pendaftar',
           style: GoogleFonts.poppins(
             color: primaryColor,
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),

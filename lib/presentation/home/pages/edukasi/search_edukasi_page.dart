@@ -63,11 +63,12 @@ class _SearchEdukasiPageState extends State<SearchEdukasiPage> {
           icon: const Icon(CupertinoIcons.back, size: 18, color: Colors.teal),
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: Text(
           'Edukasi Pengendara',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            fontSize: 18,
+            fontSize: 20,
             color: Colors.teal,
           ),
         ),

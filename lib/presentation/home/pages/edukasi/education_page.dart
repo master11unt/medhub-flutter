@@ -34,10 +34,11 @@ class _EducationPageState extends State<EducationPage> {
           color: primaryColor,
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: Text(
           'Edukasi Pengendara',
           style: GoogleFonts.poppins(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
             color: primaryColor,
           ),

@@ -10,6 +10,8 @@ import 'package:medhub/data/model/request/register_request_model.dart';
 import 'package:medhub/data/model/response/auth_response_model.dart';
 
 class AuthRemoteDatasource {
+ 
+
   Future<Either<String, AuthResponseModel>> login(
     LoginRequestModel data,
   ) async {
@@ -31,6 +33,7 @@ class AuthRemoteDatasource {
       return Left(response.body);
     }
   }
+
 
   Future<Either<String, AuthResponseModel>> register(
     RegisterRequestModel data,

@@ -72,6 +72,9 @@ class $AssetsIconsGen {
   /// File path: assets/icons/icon_profilField.svg
   String get iconProfilField => 'assets/icons/icon_profilField.svg';
 
+  /// File path: assets/icons/icon_pusatBantuan.svg
+  String get iconPusatBantuan => 'assets/icons/icon_pusatBantuan.svg';
+
   /// File path: assets/icons/icon_riwayat.svg
   String get iconRiwayat => 'assets/icons/icon_riwayat.svg';
 
@@ -157,6 +160,7 @@ class $AssetsIconsGen {
     iconJadwalField,
     iconProfil,
     iconProfilField,
+    iconPusatBantuan,
     iconRiwayat,
     iconRiwayatField,
     icondetail,

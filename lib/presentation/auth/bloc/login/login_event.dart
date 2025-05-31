@@ -5,6 +5,6 @@ class LoginEvent with _$LoginEvent {
   const factory LoginEvent.started() = _Started;
   const factory LoginEvent.login({
     required String email,
-    required String password,
+    required String password
   }) = _Login;
 }

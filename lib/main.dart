@@ -15,6 +15,7 @@ import 'package:medhub/presentation/home/pages/profile/edit_medical_info_page.da
 import 'package:medhub/presentation/home/pages/profile/edit_profile_page.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/main_page.dart';
 import 'package:medhub/presentation/home/pages/profile/kebijakan_privasi_page.dart';
+import 'package:medhub/presentation/home/pages/profile/profile_page.dart';
 import 'package:medhub/presentation/home/pages/profile/pusat_bantuan_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-      future: AuthLocalDatasource().getToken(), // pastikan ini Future<String>
+      future: AuthLocalDatasource().getToken(),
       builder: (context, snapshot) {
         final token = snapshot.data ?? '';
         return MultiBlocProvider(
@@ -44,10 +45,12 @@ class MyApp extends StatelessWidget {
             BlocProvider(
               create: (context) => RegisterBloc(AuthRemoteDatasource()),
             ),
+            // MedicalInfoBloc global hanya jika memang dibutuhkan di banyak halaman
             BlocProvider(
-              create:
-                  (context) =>
-                      MedicalInfoBloc(HealthRecordRemoteDatasource(), token),
+              create: (context) => MedicalInfoBloc(
+                HealthRecordRemoteDatasource(),
+                token,
+              ),
             ),
           ],
           child: MaterialApp(
@@ -63,22 +66,25 @@ class MyApp extends StatelessWidget {
             routes: {
               '/login': (context) => const LoginPage(),
               '/signup': (context) => const SignUpPage(),
+              '/profile': (context) => const ProfilePage(),
               '/editProfile': (context) => const MyEditProfilePage(),
-              '/editMedicalInfo': (context) => EditMedicalInfoPage(),
+              '/editMedicalInfo': (context) => FutureBuilder<String>(
+                future: AuthLocalDatasource().getToken(),
+                builder: (context, snapshot) {
+                  final token = snapshot.data ?? '';
+                  return BlocProvider(
+                    create: (context) => MedicalInfoBloc(
+                      HealthRecordRemoteDatasource(),
+                      token,
+                    ),
+                    child: EditMedicalInfoPage(),
+                  );
+                },
+              ),
               '/main': (context) => const MainPage(),
               '/medicalInfo': (context) => MedicalInfoPage(),
               '/helpCenter': (context) => const HelpCenterPage(),
               '/privacyPolicy': (context) => const KebijakanPrivasiPage(),
-              // '/editMedicalInfo':
-              //     (context) => BlocProvider(
-              //       create:
-              //           (context) => MedicalInfoBloc(
-              //             HealthRecordRemoteDatasource(),
-              //             // Ambil token dari AuthLocalDatasource atau provider lain
-              //             '', // Ganti dengan token yang sesuai
-              //           ),
-              //       child: EditMedicalInfo(),
-              //     ),
             },
           ),
         );

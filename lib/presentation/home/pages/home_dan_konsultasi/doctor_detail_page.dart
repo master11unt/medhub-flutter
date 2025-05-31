@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medhub/models/doctor.dart';
+import 'package:medhub/data/model/response/doctor_response_model.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/appointment_page.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/konsultasi_page.dart';
 
@@ -32,7 +32,9 @@ class DoctorDetailPage extends StatelessWidget {
                   height: 80,
                   child: CircularProgressIndicator(
                     strokeWidth: 13,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C8AE)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF00C8AE),
+                    ),
                     backgroundColor: Color(0xFFB2F1EC),
                   ),
                 ),
@@ -46,7 +48,7 @@ class DoctorDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-final isInConsultation = doctor.inConsultation;
+    final isInConsultation = doctor.isInConsultation == 1;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -83,29 +85,39 @@ final isInConsultation = doctor.inConsultation;
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      doctor.imagePath,
-                      width: double.infinity,
-                      height: 200,
-                      fit: BoxFit.contain,
-                    ),
+                    child: doctor.user?.image != null
+                        ? Image.network(
+                            doctor.user!.image!,
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          )
+                        : Image.asset(
+                            'assets/images/default_doctor.png',
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          ),
                   ),
                   Positioned(
                     bottom: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
-                        children: const [
-                          Icon(Icons.circle, size: 10, color: Colors.green),
-                          SizedBox(width: 4),
+                        children: [
+                          Icon(Icons.circle, size: 10, color: doctor.isOnline == 1 ? Colors.green : Colors.red),
+                          const SizedBox(width: 4),
                           Text(
-                            'Online',
-                            style: TextStyle(fontSize: 12, color: Colors.black),
+                            doctor.isOnline == 1 ? 'Online' : 'Offline',
+                            style: const TextStyle(fontSize: 12, color: Colors.black),
                           ),
                         ],
                       ),
@@ -116,48 +128,54 @@ final isInConsultation = doctor.inConsultation;
             ),
             const SizedBox(height: 16),
             Text(
-              doctor.name,
+              doctor.user?.name ?? '-',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Dokter Umum',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+            Text(
+              doctor.specialization ?? 'Dokter',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
-                    children: const [
-                      Icon(Icons.lock_clock, size: 16, color: Colors.orange),
-                      SizedBox(width: 4),
+                    children: [
+                      const Icon(Icons.lock_clock, size: 16, color: Colors.orange),
+                      const SizedBox(width: 4),
                       Text(
-                        'Senin, Rabu',
-                        style: TextStyle(fontSize: 12, color: Colors.black),
+                        doctor.practiceSchedule ?? '-', // ganti sesuai field jadwal praktik
+                        style: const TextStyle(fontSize: 12, color: Colors.black),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
-                    children: const [
-                      Icon(Icons.thumb_up, size: 16, color: Colors.orange),
-                      SizedBox(width: 4),
+                    children: [
+                      const Icon(Icons.thumb_up, size: 16, color: Colors.orange),
+                      const SizedBox(width: 4),
                       Text(
-                        '96%',
-                        style: TextStyle(fontSize: 12, color: Colors.black),
+                        '${doctor.averageRating ?? '-'}',
+                        style: const TextStyle(fontSize: 12, color: Colors.black),
                       ),
                     ],
                   ),
@@ -165,9 +183,9 @@ final isInConsultation = doctor.inConsultation;
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Dokter umum berpengalaman dengan pendekatan holistik dan ramah, siap membantu menangani berbagai keluhan kesehatan sehari-hari serta memberikan edukasi untuk hidup lebih sehat.',
-              style: TextStyle(fontSize: 14, height: 1.5),
+            Text(
+              doctor.description ?? '-',
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -175,9 +193,9 @@ final isInConsultation = doctor.inConsultation;
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Universitas Indonesia',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              doctor.education ?? '-',
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -185,9 +203,9 @@ final isInConsultation = doctor.inConsultation;
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Klinik Citra Prima Medika',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              doctor.practicePlace ?? '-',
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -195,9 +213,9 @@ final isInConsultation = doctor.inConsultation;
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 4),
-            const Text(
-              '029852047508245702',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              doctor.licenseNumber ?? '-',
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 80),
           ],
@@ -212,7 +230,9 @@ final isInConsultation = doctor.inConsultation;
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AppointmentPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const AppointmentPage(),
+                    ),
                   );
                 },
                 style: OutlinedButton.styleFrom(
@@ -248,9 +268,7 @@ final isInConsultation = doctor.inConsultation;
                         });
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isInConsultation
-                      ? Colors.grey
-                      : const Color(0xFF00A99D),
+                  backgroundColor: isInConsultation ? Colors.grey : const Color(0xFF00A99D),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

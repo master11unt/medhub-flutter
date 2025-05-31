@@ -13,18 +13,18 @@ class JadwalPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.pop(context),
-          color: primaryColor,
-        ),
+        titleSpacing: 55,
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+        //   onPressed: () => Navigator.pop(context),
+        //   color: primaryColor,
+        // ),
         title: Text(
           "Jadwal",
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
             color: primaryColor,
-            fontSize: 16,
+            fontSize: 20,
           ),
         ),
         centerTitle: false,
