@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medhub/presentation/home/pages/home_dan_konsultasi/konsultasi_page.dart'; // Import halaman chat
+import 'package:medhub/presentation/home/pages/home_dan_konsultasi/konsultasi_page.dart';
 
 class JanjiDokterCard extends StatelessWidget {
   final String title;
   final String doctorName;
   final String time;
   final String imagePath;
+  final int? doctorId;
+  final String? doctorSpecialty;
+  final bool isOnline;
 
   const JanjiDokterCard({
     super.key,
@@ -14,15 +17,26 @@ class JanjiDokterCard extends StatelessWidget {
     required this.doctorName,
     required this.time,
     required this.imagePath,
+    this.doctorId,
+    this.doctorSpecialty = 'Dokter Umum',
+    this.isOnline = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // Navigasi ke halaman konsultasi dengan data dokter
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const ConsultationChatPage()),
+          MaterialPageRoute(
+            builder: (_) => ConsultationChatPage(
+              doctorId: doctorId ?? 0,
+              doctorName: doctorName,
+              doctorSpecialty: doctorSpecialty ?? 'Dokter Umum',
+              doctorImage: imagePath,
+            ),
+          ),
         );
       },
       child: Center(
@@ -64,13 +78,33 @@ class JanjiDokterCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isOnline ? const Color(0xFFE5F8F6) : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            isOnline ? 'Online' : 'Offline',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isOnline ? const Color(0xFF00A89E) : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -87,32 +121,33 @@ class JanjiDokterCard extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            imagePath,
-                            width: 36,
-                            height: 36,
-                            fit: BoxFit.cover,
-                          ),
+                          child: _buildDoctorImage(),
                         ),
                         const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              doctorName,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                doctorName,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            const Text(
-                              'Dokter Umum',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
+                              Text(
+                                doctorSpecialty ?? 'Dokter Umum',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -124,5 +159,41 @@ class JanjiDokterCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Widget untuk menampilkan gambar dokter (mendukung URL dan asset lokal)
+  Widget _buildDoctorImage() {
+    // Cek apakah path adalah URL atau asset lokal
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        width: 36,
+        height: 36,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/dokter1.png',
+            width: 36,
+            height: 36,
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        imagePath,
+        width: 36,
+        height: 36,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 36,
+            height: 36,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.person, size: 24, color: Colors.grey),
+          );
+        },
+      );
+    }
   }
 }

@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
       Data? healthRecord;
       try {
         final healthRecordResponse = await HealthRecordRemoteDatasource()
-            .getMyHealthRecord(token);
+            .getHealthRecord(token);
         healthRecord = healthRecordResponse.data;
       } catch (e) {
         healthRecord = null;
@@ -162,7 +162,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(12),
                         onTap: () async {
-                          // Kirim data awal ke halaman edit
+                          // Parse birth date dengan benar
+                          DateTime? birthDate;
+                          if (_healthRecord?.birthDate != null) {
+                            birthDate = _healthRecord!.birthDate;
+                          }
+                          
                           final result = await Navigator.pushNamed(
                             context,
                             '/editMedicalInfo',
@@ -173,11 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 'height': _healthRecord?.height,
                                 'weight': _healthRecord?.weight,
                                 'bloodType': _healthRecord?.bloodType,
-                                'birthDate':
-                                    _healthRecord?.birthDate
-                                        ?.toIso8601String()
-                                        .split('T')
-                                        .first,
+                                'birthDate': birthDate?.toIso8601String().split('T').first, // Format YYYY-MM-DD
                                 'age': _healthRecord?.age,
                                 'allergies': _healthRecord?.allergies,
                                 'currentMedications':

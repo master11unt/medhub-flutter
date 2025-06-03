@@ -59,21 +59,37 @@ class Data {
 
     String toJson() => json.encode(toMap());
 
-    factory Data.fromMap(Map<String, dynamic> json) => Data(
-        id: json["id"],
-        userId: json["user_id"],
-        height: json["height"],
-        weight: json["weight"],
-        bloodType: json["blood_type"],
-        birthDate: json["birth_date"] == null ? null : DateTime.parse(json["birth_date"]),
-        age: json["age"],
-        allergies: json["allergies"],
-        currentMedications: json["current_medications"],
-        currentConditions: json["current_conditions"],
-        medicalDocument: json["medical_document"],
-        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    );
+    factory Data.fromMap(Map<String, dynamic> json) {
+        // Helper function untuk convert string ke int dengan safety
+        int? parseIntFromDynamic(dynamic value) {
+            if (value == null) return null;
+            if (value is int) return value;
+            if (value is String) {
+                try {
+                    return int.parse(value);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        return Data(
+            id: parseIntFromDynamic(json["id"]),
+            userId: parseIntFromDynamic(json["user_id"]),
+            height: parseIntFromDynamic(json["height"]),
+            weight: parseIntFromDynamic(json["weight"]),
+            bloodType: json["blood_type"],
+            birthDate: json["birth_date"] == null ? null : DateTime.parse(json["birth_date"]),
+            age: parseIntFromDynamic(json["age"]),
+            allergies: json["allergies"],
+            currentMedications: json["current_medications"],
+            currentConditions: json["current_conditions"],
+            medicalDocument: json["medical_document"],
+            createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+            updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+        );
+    }
 
     Map<String, dynamic> toMap() => {
         "id": id,

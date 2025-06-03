@@ -472,8 +472,7 @@ class _MedicalInfoPageState extends State<MedicalInfoPage> {
                       ),
                       onPressed: () async {
                         // Validasi sederhana
-                        if (_heightController.text.isEmpty ||
-                            _weightController.text.isEmpty) {
+                        if (_heightController.text.isEmpty || _weightController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
@@ -485,8 +484,8 @@ class _MedicalInfoPageState extends State<MedicalInfoPage> {
                         }
 
                         // Ambil token sebelum submit
-                        final token = await AuthLocalDatasource().getToken();
-                        print('Token: $token');
+                        final token = await AuthLocalDatasource().getRefreshedToken();
+                        print('Token before submission: $token');
 
                         if (token.isEmpty) {
                           showErrorDialog(
@@ -496,19 +495,52 @@ class _MedicalInfoPageState extends State<MedicalInfoPage> {
                           return;
                         }
 
-                        final birthDate = DateTime.tryParse(
-                          _birthDateController.text,
-                        );
+                        // Parse birthdate properly
+                        DateTime? birthDate;
+                        if (_birthDateController.text.isNotEmpty) {
+                          try {
+                            birthDate = DateTime.parse(_birthDateController.text);
+                            print('Formatted birth date for API: ${_birthDateController.text}');
+                          } catch (e) {
+                            print('Error parsing date: $e');
+                            // Handle date parsing error
+                            showErrorDialog(
+                              context,
+                              "Format tanggal lahir tidak valid",
+                            );
+                            return;
+                          }
+                        }
 
+                        // Debug log all values before submission
+                        print('Submitting form with values:');
+                        print('Height: ${_heightController.text}');
+                        print('Weight: ${_weightController.text}');
+                        print('Blood Type: ${_bloodTypeController.text}');
+                        print('Birth Date: ${_birthDateController.text}');
+                        print('Age: ${_ageController.text}');
+                        print('Allergies: ${_allergiesController.text}');
+                        print('Medications: ${_medicationsController.text}');
+                        print('Conditions: ${_conditionsController.text}');
+                        print('Document: ${_medicalDocumentController.text}');
+
+                        // Convert height and weight to integers if not empty
+                        final height = _heightController.text.isNotEmpty ? 
+                            int.tryParse(_heightController.text) : null;
+                        final weight = _weightController.text.isNotEmpty ? 
+                            int.tryParse(_weightController.text) : null;
+                        final age = _ageController.text.isNotEmpty ? 
+                            int.tryParse(_ageController.text) : null;
+                        
                         if (widget.isEdit && widget.recordId != null) {
                           context.read<MedicalInfoBloc>().add(
                             MedicalInfoEvent.edit(
                               id: widget.recordId!,
-                              height: int.tryParse(_heightController.text),
-                              weight: int.tryParse(_weightController.text),
+                              height: height,
+                              weight: weight,
                               bloodType: _bloodTypeController.text,
-                              birthDate: birthDate, // <-- sudah DateTime?
-                              age: int.tryParse(_ageController.text),
+                              birthDate: birthDate,
+                              age: age,
                               allergies: _allergiesController.text,
                               currentMedications: _medicationsController.text,
                               currentConditions: _conditionsController.text,
@@ -518,11 +550,11 @@ class _MedicalInfoPageState extends State<MedicalInfoPage> {
                         } else {
                           context.read<MedicalInfoBloc>().add(
                             MedicalInfoEvent.submit(
-                              height: int.tryParse(_heightController.text),
-                              weight: int.tryParse(_weightController.text),
+                              height: height,
+                              weight: weight,
                               bloodType: _bloodTypeController.text,
-                              birthDate: birthDate, // <-- sudah DateTime?
-                              age: int.tryParse(_ageController.text),
+                              birthDate: birthDate,
+                              age: age,
                               allergies: _allergiesController.text,
                               currentMedications: _medicationsController.text,
                               currentConditions: _conditionsController.text,

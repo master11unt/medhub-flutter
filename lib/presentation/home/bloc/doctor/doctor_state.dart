@@ -1,9 +1,25 @@
-part of 'doctor_bloc.dart';
+import 'package:medhub/data/model/response/doctor_response_model.dart';
 
-@freezed
-class DoctorState with _$DoctorState {
-  const factory DoctorState.initial() = DoctorInitial;
-  const factory DoctorState.loading() = DoctorLoading;
-  const factory DoctorState.loaded(List<Doctor> doctors) = DoctorLoaded;
-  const factory DoctorState.error(String message) = DoctorError;
+abstract class DoctorState {}
+
+class DoctorInitial extends DoctorState {}
+
+class DoctorLoading extends DoctorState {}
+
+class DoctorLoaded extends DoctorState {
+  final List<Doctor> doctors;
+  
+  DoctorLoaded(this.doctors);
+}
+
+class DoctorSingleLoaded extends DoctorState {
+  final Doctor doctor; // Ubah tipe data dari DoctorResponseModel menjadi Doctor
+  
+  DoctorSingleLoaded(this.doctor);
+}
+
+class DoctorError extends DoctorState {
+  final String message;
+  
+  DoctorError(this.message);
 }

@@ -45,6 +45,21 @@ class AuthLocalDatasource {
     }
   }
 
+  Future<String> getRefreshedToken() async {
+    try {
+      // This ensures we always get the latest token from storage
+      final pref = await SharedPreferences.getInstance();
+      final data = pref.getString('auth_data');
+      if (data != null) {
+        final authData = AuthResponseModel.fromJson(jsonDecode(data));
+        return authData.token ?? '';
+      }
+      return '';
+    } catch (e) {
+      return '';
+    }
+  }
+
   // Buat ngecek udah perna login atau belum
   Future<bool> isLogin() async {
     final pref = await SharedPreferences.getInstance();

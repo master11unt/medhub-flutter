@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:medhub/models/doctor.dart';
+import 'package:medhub/data/model/response/doctor_response_model.dart'; // Ubah import
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/home_page.dart';
 import 'package:medhub/presentation/home/pages/profile/profile_page.dart';
-import 'package:medhub/presentation/home/pages/riwayat_jadwal_dan_konsultasi/daftar_riwayat_page.dart';
+import 'package:medhub/presentation/home/pages/riwayat_jadwal_dan_konsultasi/riwayat_page.dart';
 import 'package:medhub/presentation/home/pages/riwayat_jadwal_dan_konsultasi/jadwal_page.dart';
 
 class MainPage extends StatefulWidget {
+  final int selectedIndex;
   final bool hasJanji;
-  final Doctor? janjiDokter;
+  final Doctor? janjiDokter; // Ubah tipe ke Doctor dari doctor_response_model.dart
 
-  const MainPage({super.key, this.hasJanji = false, this.janjiDokter});
+  const MainPage({
+    super.key, 
+    this.selectedIndex = 0,
+    this.hasJanji = false, 
+    this.janjiDokter,
+  });
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.selectedIndex;
     _pages = [
       HomePage(hasJanji: widget.hasJanji, janjiDokter: widget.janjiDokter),
       const JadwalPage(),

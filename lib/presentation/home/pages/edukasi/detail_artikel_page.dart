@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medhub/data/model/response/edukasi_response_model.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:medhub/constants/variable.dart';
 
 class DetailArtikelPage extends StatelessWidget {
-  final String image;
-  final String tag;
-  final String title;
-  final String desc;
+  final Edukasi artikel;
 
-  const DetailArtikelPage({
-    super.key,
-    required this.image,
-    required this.tag,
-    required this.title,
-    required this.desc,
-  });
+  const DetailArtikelPage({super.key, required this.artikel});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +29,7 @@ class DetailArtikelPage extends StatelessWidget {
         title: Text(
           'Edukasi Pengendara',
           style: GoogleFonts.poppins(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: primaryColor,
           ),
@@ -45,7 +39,7 @@ class DetailArtikelPage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 20),
             child: GestureDetector(
               onTap: () {
-                Share.share('Baca artikel ini di MedHub!');
+                Share.share('Baca artikel "${artikel.title}" di MedHub!');
               },
               child: SvgPicture.asset(
                 'assets/icons/share.svg',
@@ -63,99 +57,99 @@ class DetailArtikelPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gambar dengan overlay info
               Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      'assets/images/detailartikel.png',
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Keselamatan berkendara',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
+                  _buildHeaderImage(artikel),
+                  if (artikel.category?.name != null)
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      right: 12,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              artikel.category!.name!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Intan Afika Nuur Azizah',
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  artikel.authorName ?? '-',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _formatPublishedDate(artikel.publishedAt),
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w400,
                                   color: Colors.white,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '12 February 2025 • 12.00 Wib',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.white,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Sumber
-              Row(
-                children: [
-                  Image.asset(
-                    'assets/images/okezone.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Okezone News',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
+              if (artikel.source != null)
+                Row(
+                  children: [
+                    artikel.institutionLogo != null
+                        ? Image.network(
+                          _getFullImageUrl(artikel.institutionLogo!),
+                          width: 24,
+                          height: 24,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                              "Error loading institution logo: $error",
+                            );
+                            return const Icon(Icons.public);
+                          },
+                        )
+                        : const Icon(Icons.public),
+                    const SizedBox(width: 8),
+                    Text(
+                      artikel.source!,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 12),
 
               // Judul
               Text(
-                'Catat! Ini 5 Tips Cegah Dehidrasi saat Mengemudi pada Perjalanan Mudik',
+                artikel.title ?? '',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
@@ -163,21 +157,11 @@ class DetailArtikelPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Isi artikel
               Text(
-                'TIPS cegah dehidrasi saat mengemudi pada perjalanan mudik perlu Anda ketahui agar tetap segar dan bugar sampai kampung halaman. Dehidrasi terjadi saat tubuh kekurangan sejumlah cairan untuk menjalankan fungsinya dengan optimal.',
-                style: GoogleFonts.poppins(fontSize: 14),
+                _cleanHtmlContent(artikel.content ?? ''),
+                style: GoogleFonts.poppins(fontSize: 14, height: 1.5),
               ),
-              const SizedBox(height: 12),
-              _pointText(
-                '1. Cukupi kebutuhan cairan tubuh',
-                'Mulailah hari Anda dengan segelas air. Ini adalah cara yang bagus untuk memulai hidrasi harian Anda. Kemudian, lanjutkan minum air putih sepanjang hari, minimal sebanyak 7-8 gelas dalam sehari. Selain itu, bawa pula air minum dalam botol untuk dikonsumsi secara berkala sepanjang perjalanan. Minumlah sebelum rasa haus melanda, karena haus merupakan salah satu tanda awal terjadinya dehidrasi.',
-              ),
-              const SizedBox(height: 12),
-              _pointText(
-                '2. Bawa air minum dengan sedikit rasa',
-                'Bawalah air minum dengan tambahan sedikit rasa, seperti infused water menggunakan irisan lemon atau jeruk nipis. Selain infused water, Anda juga bisa membawa kelapa muda atau minuman kemasan yang terbuat dari kelapa asli agar Anda tidak kehausan, serta dapat dikonsumsi dengan mudah di sela-sela perjalanan.',
-              ),
+
               const SizedBox(height: 32),
             ],
           ),
@@ -186,18 +170,82 @@ class DetailArtikelPage extends StatelessWidget {
     );
   }
 
-  Widget _pointText(String title, String body) {
-    return RichText(
-      text: TextSpan(
-        style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
-        children: [
-          TextSpan(
-            text: '$title\n',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _buildHeaderImage(Edukasi artikel) {
+    if (artikel.thumbnail == null || artikel.thumbnail!.isEmpty) {
+      return Container(
+        height: 200,
+        color: Colors.grey[200],
+        child: const Icon(
+          Icons.image_not_supported,
+          size: 48,
+          color: Colors.grey,
+        ),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: Variable.imageBaseUrl(artikel.thumbnail),
+      height: 200,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      placeholder:
+          (context, url) => Container(
+            height: 200,
+            color: Colors.grey[200],
+            child: const Center(child: CircularProgressIndicator()),
           ),
-          TextSpan(text: body),
-        ],
-      ),
+      errorWidget: (context, url, error) {
+        debugPrint(' Error loading detail image: $error, URL: $url');
+        return Container(
+          height: 200,
+          color: Colors.grey[200],
+          child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+        );
+      },
     );
+  }
+
+  String _formatPublishedDate(DateTime? date) {
+    if (date == null) return '';
+
+    try {
+      return "${date.day} ${_monthName(date.month)} ${date.year} • ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} WIB";
+    } catch (e) {
+      return '';
+    }
+  }
+
+  String _monthName(int month) {
+    const List<String> months = [
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+    return months[month];
+  }
+
+  String _cleanHtmlContent(String htmlContent) {
+    String content = htmlContent.replaceAll(RegExp(r'<br\s*\/?>'), '\n');
+    content = content.replaceAll(RegExp(r'<[^>]*>'), '');
+    content = content.replaceAll('&nbsp;', ' ');
+    content = content.replaceAll('&amp;', '&');
+    content = content.replaceAll('&lt;', '<');
+    content = content.replaceAll('&gt;', '>');
+    content = content.replaceAll('&quot;', '"');
+    content = content.replaceAll('&#39;', "'");
+    return content;
+  }
+
+  String _getFullImageUrl(String path) {
+    return Variable.imageBaseUrl(path);
   }
 }

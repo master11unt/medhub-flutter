@@ -1,8 +1,17 @@
-part of 'doctor_bloc.dart';
+abstract class DoctorEvent {}
 
-@freezed
-class DoctorEvent with _$DoctorEvent {
-  const factory DoctorEvent.started() = _Started;
-  const factory DoctorEvent.fetchTopDoctors() = _FetchTopDoctors;
-  const factory DoctorEvent.searchDoctors(String keyword) = _SearchDoctors;
+class DoctorFetchAll extends DoctorEvent {}
+
+class DoctorFetchTop extends DoctorEvent {}
+
+class DoctorSearch extends DoctorEvent {
+  final String keyword;
+  
+  DoctorSearch(this.keyword);
+}
+
+class DoctorFetchById extends DoctorEvent {
+  final int id;
+  
+  DoctorFetchById(this.id);
 }

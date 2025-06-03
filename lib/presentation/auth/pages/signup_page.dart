@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medhub/data/datasource/auth_local_datasource.dart';
+import 'package:medhub/data/datasource/health_record_remote_datasource.dart';
+import 'package:medhub/presentation/auth/bloc/medical_info/medical_info_bloc.dart';
 import 'package:medhub/presentation/auth/bloc/register/register_bloc.dart';
 import 'package:medhub/presentation/auth/pages/login_page.dart';
 import 'package:medhub/presentation/auth/pages/medical_info_page.dart';
@@ -139,11 +141,24 @@ class _SignUpPageState extends State<SignUpPage> {
             
             Navigator.of(context, rootNavigator: true).pop(); // tutup loading
             showSuccessDialog(context);
-            Future.delayed(const Duration(seconds: 1), () {
-              Navigator.of(context, rootNavigator: true).pop(); // tutup success
+            Future.delayed(const Duration(seconds: 1), () async {
+              Navigator.of(context, rootNavigator: true).pop(); // Close success dialog
+              
+              // Get fresh token from storage
+              final token = await AuthLocalDatasource().getRefreshedToken();
+              
+              // Navigate to MedicalInfoPage with the properly initialized bloc
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => MedicalInfoPage()),
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (context) => MedicalInfoBloc(
+                      HealthRecordRemoteDatasource(),
+                      token,
+                    ),
+                    child: MedicalInfoPage(),
+                  ),
+                ),
               );
             });
           } else if (state is RegisterStateError) {

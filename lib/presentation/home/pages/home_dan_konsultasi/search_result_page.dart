@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:medhub/models/doctor.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medhub/data/datasource/doctor_remote_datasource.dart';
+import 'package:medhub/data/model/response/doctor_response_model.dart';
+import 'package:medhub/presentation/home/bloc/doctor/doctor_bloc.dart';
+import 'package:medhub/presentation/home/bloc/doctor/doctor_event.dart';
+import 'package:medhub/presentation/home/bloc/doctor/doctor_state.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/doctor_detail_page.dart';
 
 class SearchResultPage extends StatelessWidget {
@@ -9,52 +14,6 @@ class SearchResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> doctors = [
-      {
-        'name': 'dr. Rayan Ilham Nugraha',
-        'specialty': 'Dokter Umum',
-        'image': 'assets/images/img_dokter.png',
-        'days': 'Senin, Rabu',
-        'rating': '96%',
-        'status': 'Online',
-        'consulting': false,
-      },
-      {
-        'name': 'dr. Raihana Nur Azizah',
-        'specialty': 'Dokter Anak',
-        'image': 'assets/images/img_dokter.png',
-        'days': 'Senin, Rabu',
-        'rating': '96%',
-        'status': 'Online',
-        'consulting': true,
-      },
-      {
-        'name': 'dr. Reihan Putra Mahendra',
-        'specialty': 'Dokter Saraf',
-        'image': 'assets/images/img_dokter.png',
-        'days': 'Senin, Rabu',
-        'rating': '96%',
-        'status': 'Online',
-        'consulting': false,
-      },
-      {
-        'name': 'dr. Rihana Ardelia',
-        'specialty': 'Dokter Kandungan',
-        'image': 'assets/images/img_dokter.png',
-        'days': 'Senin, Rabu',
-        'rating': '96%',
-        'status': 'Online',
-        'consulting': false,
-      },
-    ];
-
-    // ✅ Filter berdasarkan keyword
-    final lowerKeyword = keyword.toLowerCase();
-    final filteredDoctors = doctors.where((doctor) {
-      return doctor['name'].toLowerCase().contains(lowerKeyword) ||
-             doctor['specialty'].toLowerCase().contains(lowerKeyword);
-    }).toList();
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -69,48 +28,99 @@ class SearchResultPage extends StatelessWidget {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: filteredDoctors.isEmpty
-            ? const Center(
-                child: Text(
-                  'Tidak ditemukan hasil untuk pencarianmu.',
-                  style: TextStyle(color: Colors.grey),
+      body: BlocProvider(
+        create: (context) => DoctorBloc(DoctorRemoteDatasource())
+          ..add(DoctorSearch(keyword)),
+        child: BlocBuilder<DoctorBloc, DoctorState>(
+          builder: (context, state) {
+            if (state is DoctorLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is DoctorLoaded) {
+              final doctors = state.doctors;
+              if (doctors.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Tidak ditemukan hasil untuk pencarianmu.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+              
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ListView.separated(
+                  itemCount: doctors.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    return DoctorCardItem(doctor: doctors[index]);
+                  },
                 ),
-              )
-            : ListView.separated(
-                itemCount: filteredDoctors.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final doctor = filteredDoctors[index];
-                  return DoctorCardItem(doctor: doctor);
-                },
-              ),
+              );
+            } else if (state is DoctorError) {
+              return Center(
+                child: Text(
+                  'Error: ${state.message}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }
 }
 
 class DoctorCardItem extends StatelessWidget {
-  final Map<String, dynamic> doctor;
+  final Doctor doctor;
 
   const DoctorCardItem({super.key, required this.doctor});
 
   @override
   Widget build(BuildContext context) {
+    final bool isOnline = doctor.isOnline == 1;
+    final bool isConsulting = doctor.isInConsultation == 1;
+    
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE0E0E0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(doctor['image'], height: 100, fit: BoxFit.cover),
+            child: doctor.user?.image != null
+              ? Image.network(
+                  doctor.user!.image!,
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    'assets/images/dokter1.png',
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              : Image.asset(
+                  'assets/images/dokter1.png',
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -118,7 +128,7 @@ class DoctorCardItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  doctor['name'],
+                  doctor.user?.name ?? '-',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -131,7 +141,7 @@ class DoctorCardItem extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        doctor['specialty'],
+                        doctor.specialization ?? '-',
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 14,
@@ -140,10 +150,14 @@ class DoctorCardItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.circle, size: 8, color: Colors.green),
+                    Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: isOnline ? Colors.green : Colors.grey,
+                    ),
                     const SizedBox(width: 4),
                     Text(
-                      doctor['status'],
+                      isOnline ? 'Online' : 'Offline',
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
@@ -151,12 +165,20 @@ class DoctorCardItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _buildInfoBadge(Icons.work, doctor['days']),
+                    _buildInfoBadge(
+                      Icons.work,
+                      doctor.schedules != null && doctor.schedules!.isNotEmpty
+                          ? doctor.schedules![0].day ?? '-'
+                          : '-',
+                    ),
                     const SizedBox(width: 8),
-                    _buildInfoBadge(Icons.thumb_up, doctor['rating']),
+                    _buildInfoBadge(
+                      Icons.thumb_up,
+                      doctor.averageRating ?? '0.0',
+                    ),
                   ],
                 ),
-                if (doctor['consulting']) ...[
+                if (isConsulting) ...[
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -184,17 +206,11 @@ class DoctorCardItem extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => DoctorDetailPage(
-      doctor: Doctor(
-        name: 'Dr. Dummy',
-        imagePath: 'assets/images/dokter_dummy.png',
-      ),
-    ),
-  ),
-);
-
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DoctorDetailPage(doctor: doctor),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00A99D),

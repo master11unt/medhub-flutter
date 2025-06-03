@@ -289,8 +289,8 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
           style: GoogleFonts.poppins(
             color: primaryColor,
             fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+            fontSize: 20,
+          ), 
         ),
         centerTitle: false,
         leading: IconButton(
@@ -428,21 +428,21 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
                       'Nomor Identitas (BPJS/KTP/KK)',
                       _ktpController,
                     ),
-                    const SizedBox(height: 20),
-                    buildLabeledTextField(
-                      'Password Baru',
-                      'Password Baru',
-                      isPassword: true,
-                      controller: _passwordController,
-                    ),
-                    const SizedBox(height: 12),
-                    buildLabeledTextField(
-                      'Konfirmasi Password',
-                      'Konfirmasi Password',
-                      isPassword: true,
-                      isConfirm: true,
-                      controller: _confirmPasswordController,
-                    ),
+                    // const SizedBox(height: 20),
+                    // buildLabeledTextField(
+                    //   'Password Baru',
+                    //   'Password Baru',
+                    //   isPassword: true,
+                    //   controller: _passwordController,
+                    // ),
+                    // const SizedBox(height: 12),
+                    // buildLabeledTextField(
+                    //   'Konfirmasi Password',
+                    //   'Konfirmasi Password',
+                    //   isPassword: true,
+                    //   isConfirm: true,
+                    //   controller: _confirmPasswordController,
+                    // ),
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,

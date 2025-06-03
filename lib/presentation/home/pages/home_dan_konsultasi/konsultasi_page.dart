@@ -2,13 +2,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:medhub/models/doctor.dart';
+import 'package:medhub/data/datasource/doctor_remote_datasource.dart';
+import 'package:medhub/data/model/response/doctor_response_model.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/doctor_detail_page.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/dokter_rating_page.dart';
 import 'package:medhub/presentation/home/pages/home_dan_konsultasi/halaman_pdf.dart';
 
 class ConsultationChatPage extends StatefulWidget {
-  const ConsultationChatPage({super.key});
+  final int doctorId;
+  final String doctorName;
+  final String doctorSpecialty;
+  final String? doctorImage;
+
+  const ConsultationChatPage({
+    super.key, 
+    required this.doctorId,
+    required this.doctorName,
+    required this.doctorSpecialty,
+    this.doctorImage,
+  });
 
   @override
   State<ConsultationChatPage> createState() => _ConsultationChatPageState();
@@ -17,6 +29,8 @@ class ConsultationChatPage extends StatefulWidget {
 class _ConsultationChatPageState extends State<ConsultationChatPage> {
   bool mulaiChat = false;
   bool chatSelesai = true;
+  Doctor? _doctorDetail;
+  bool _isLoadingDoctor = false;
 
   final TextEditingController _messageController = TextEditingController();
 
@@ -34,6 +48,48 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
     {'sender': 'user', 'type': 'text', 'text': 'Tidak dok'},
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchDoctorDetail();
+  }
+
+  Future<void> _fetchDoctorDetail() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingDoctor = true;
+      });
+    }
+
+    try {
+      // Fetch doctor detail using DoctorRemoteDatasource
+      final datasource = DoctorRemoteDatasource();
+      final result = await datasource.getDoctorDetail(widget.doctorId);
+      
+      if (mounted) {
+        setState(() {
+          _isLoadingDoctor = false;
+          result.fold(
+            (error) {
+              // Handle error, but still keep the basic info we have
+              debugPrint('Error fetching doctor detail: $error');
+            },
+            (doctor) {
+              _doctorDetail = doctor;
+            },
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingDoctor = false;
+        });
+      }
+      debugPrint('Exception fetching doctor detail: $e');
+    }
+  }
+
   void _sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
       setState(() {
@@ -44,6 +100,39 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
         });
         _messageController.clear();
       });
+    }
+  }
+
+  void _navigateToDoctorDetail() {
+    if (_doctorDetail != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DoctorDetailPage(
+            doctor: _doctorDetail!,
+          ),
+        ),
+      );
+    } else {
+      // If we don't have full doctor detail, create a minimal Doctor object with the info we have
+      final doctor = Doctor(
+        id: widget.doctorId,
+        user: User(
+          name: widget.doctorName,
+          image: widget.doctorImage,
+        ),
+        specialization: widget.doctorSpecialty,
+      );
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DoctorDetailPage(
+            doctor: doctor,
+            fromSearch: true, // This will trigger fetching full details in the detail page
+          ),
+        ),
+      );
     }
   }
 
@@ -69,36 +158,38 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Row(
               children: [
-                const CircleAvatar(radius: 22, backgroundImage: AssetImage('assets/images/dokter1rb.png')),
+                CircleAvatar(
+                  radius: 22, 
+                  backgroundImage: widget.doctorImage != null
+                    ? NetworkImage(widget.doctorImage!)
+                    : const AssetImage('assets/images/dokter1.png') as ImageProvider,
+                  onBackgroundImageError: (_, __) {
+                    // Fallback to default image if network image fails to load
+                  },
+                ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('dr. Rayan Ilham Nugraha',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black)),
-                      SizedBox(height: 2),
-                      Text('Dokter Umum', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text(
+                        widget.doctorName,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.doctorSpecialty,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
-              IconButton(
-  icon: const Icon(Icons.more_horiz, color: Colors.grey),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DoctorDetailPage(
-          doctor: Doctor(
-            name: 'Dr. Dummy',
-            imagePath: 'assets/images/dokter_dummy.png',
-          ),
-        ),
-      ),
-    );
-  },
-),
-
+                IconButton(
+                  icon: const Icon(Icons.more_horiz, color: Colors.grey),
+                  onPressed: _navigateToDoctorDetail,
+                ),
               ],
             ),
           ),
@@ -201,15 +292,20 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 18,
-                        backgroundImage: AssetImage('assets/images/dokter1rb.png'),
+                        backgroundImage: widget.doctorImage != null
+                          ? NetworkImage(widget.doctorImage!)
+                          : const AssetImage('assets/images/dokter1.png') as ImageProvider,
+                        onBackgroundImageError: (_, __) {
+                          // Fallback handled by constructor
+                        },
                       ),
                       const SizedBox(width: 28),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'dr. Rayan Ilham Nugraha\nTelah bergabung di chat untuk membantu',
-                          style: TextStyle(
+                          '${widget.doctorName}\nTelah bergabung di chat untuk membantu',
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
@@ -294,15 +390,26 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
                       ),
                       child: Row(
                         children: [
-                          const CircleAvatar(radius: 20, backgroundImage: AssetImage('assets/images/dokter1rb.png')),
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: widget.doctorImage != null
+                              ? NetworkImage(widget.doctorImage!)
+                              : const AssetImage('assets/images/dokter1.png') as ImageProvider,
+                          ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('dr. Rayan Ilham Nugraha', style: TextStyle(fontWeight: FontWeight.w600)),
-                                Text('Meninggalkan chat, sesi mu telah berakhir',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text(
+                                  widget.doctorName, 
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Text(
+                                  'Meninggalkan chat, sesi mu telah berakhir',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
                               ],
                             ),
                           ),
@@ -315,17 +422,25 @@ class _ConsultationChatPageState extends State<ConsultationChatPage> {
                       height: 48,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const DoctorRatingPage()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (_) => DoctorRatingPage(
+                          //       doctorId: widget.doctorId,
+                          //       doctorName: widget.doctorName,
+                          //       doctorImage: widget.doctorImage,
+                          //     ),
+                          //   ),
+                          // );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF00A89E),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Chat Selesai',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                        child: const Text(
+                          'Chat Selesai',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
                       ),
                     ),
                   ],
